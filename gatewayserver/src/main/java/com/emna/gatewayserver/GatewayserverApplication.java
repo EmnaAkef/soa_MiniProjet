@@ -13,16 +13,19 @@ public class GatewayserverApplication {
         SpringApplication.run(GatewayserverApplication.class, args);
     }
 
-//    @Bean
-//    public RouteLocator MyRouteConfig(RouteLocatorBuilder routeLocatorBuilder)
-//    {
-//        return routeLocatorBuilder.routes()
-//                .route(p -> p
-//                        .path("/api/sections/**")
-//                        .uri("lb://SECTION-MICROSERVICE"))
-//                .route(p -> p
-//                        .path("/api/students/**")
-//                        .uri("lb://STUDENT"))
-//                .build();
-//    }
+    @Bean
+    public RouteLocator MyRouteConfig(RouteLocatorBuilder routeLocatorBuilder)
+    {
+        return routeLocatorBuilder.routes()
+                .route(p -> p
+                        .path("/api/sections/**")
+                        .uri("lb://SECTION-MICROSERVICE"))
+                .route(p -> p
+                        .path("/api/students/**")
+                        .filters( f -> f.circuitBreaker(config ->
+                                config.setName("studentCircuitBreaker")
+                                        .setFallbackUri("forward:/contactAdmin")))
+                        .uri("lb://STUDENT"))
+                .build();
+    }
 }

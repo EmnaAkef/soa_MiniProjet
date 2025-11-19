@@ -5,7 +5,8 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 //@FeignClient(url = "http://localhost:8080", value = "SECTION")
-@FeignClient(name = "SECTION-MICROSERVICE")
+//@FeignClient(value = "SECTION-MICROSERVICE",fallback = DeptFallBack.class)
+@FeignClient(value = "SECTION-MICROSERVICE")
 public interface APIClient {
         @GetMapping("api/sections/{section-code}")
         SectionDto getSecByCode(@PathVariable("section-code") String sectionCode

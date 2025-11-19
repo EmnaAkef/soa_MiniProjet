@@ -18,10 +18,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/sections")
 public class SectionController {
 
-    @Autowired
-    Configuration configuration;
-    @Value("${build.version}")
-    private String buildVersion;
+//    @Autowired
+//    Configuration configuration;
+//    @Value("${build.version}")
+//    private String buildVersion;
 
     public SectionController(SectionService sectionService){
         this.sectionService = sectionService;
@@ -38,17 +38,17 @@ public class SectionController {
                 HttpStatus.OK);
     }
 
-    @GetMapping("/version")
-    public ResponseEntity<String> version()
-    {
-        return
-                ResponseEntity.status(HttpStatus.OK).body(buildVersion);
-    }
-
-    @GetMapping("/author")
-    public  ResponseEntity<String> retrieveAuthorInfo() {
-        return
-                ResponseEntity.status(HttpStatus.OK)
-                        .body(configuration.getName()+" "+configuration.getEmail() );
-    }
+//    @GetMapping("/version")
+//    public ResponseEntity<String> version()
+//    {
+//        return
+//                ResponseEntity.status(HttpStatus.OK).body(buildVersion);
+//    }
+//
+//    @GetMapping("/author")
+//    public  ResponseEntity<String> retrieveAuthorInfo() {
+//        return
+//                ResponseEntity.status(HttpStatus.OK)
+//                        .body(configuration.getName()+" "+configuration.getEmail() );
+//    }
 }

@@ -18,6 +18,7 @@ public class StudentServiceImpl implements StudentService{
     private WebClient webClient;
     private APIClient apiClient;
 
+
     @Override
     public APIResponseDto getStudentById(Long id) {
         Student student = studentRepository.findById(id).get();
@@ -29,13 +30,18 @@ public class StudentServiceImpl implements StudentService{
 //                .bodyToMono(SectionDto.class)
 //                .block();
         SectionDto sectionDto = apiClient.getSecByCode(student.getSecCode());
+        String sname;
+        if (sectionDto == null){
+            sname="NOT AVAILABLE";
+        }else
+            sname=sectionDto.getSecName();
 
         StudentDto studentDto =  new StudentDto(
                 student.getId(),
                 student.getFirstName(),
                 student.getLastName(),
                 student.getSecCode(),
-                sectionDto.getSecName()
+                sname
         );
         APIResponseDto apiResponseDto = new APIResponseDto();
         apiResponseDto.setStudentDto(studentDto);

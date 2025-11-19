@@ -17,14 +17,16 @@ public class SectionMicroserviceApplication {
     @Bean
     CommandLineRunner commandLineRunner(SectionRepository sectionRepository) {
         return args -> {
-            sectionRepository.save(Section.builder()
-                    .secName("Informatique")
-                    .secCode("INFO")
-                    .build());
-            sectionRepository.save(Section.builder()
-                    .secName("Génie Civil")
-                    .secCode("GCIV")
-                    .build());
+            if (sectionRepository.count() == 0) {
+                sectionRepository.save(Section.builder()
+                        .secName("Informatique")
+                        .secCode("INFO")
+                        .build());
+                sectionRepository.save(Section.builder()
+                        .secName("Génie Civil")
+                        .secCode("GCIV")
+                        .build());
+            }
         };
     }
 }
