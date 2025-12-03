@@ -1,6 +1,14 @@
 server:
   port: 8888
 spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: "http://localhost:8090/realms/master/protocol/openid-connect/certs"
+
+
+
   application:
     name: gatewayserver
   cloud:
@@ -9,15 +17,15 @@ spring:
     discovery:
       enabled: true
     gateway:
-#      routes:
-#        - id: r1
-#          uri: lb://SECTION-MICROSERVICE
-#          predicates:
-#            - Path= /api/sections/**
-#        - id: r2
-#          uri: lb://STUDENT
-#          predicates:
-#            - Path= /api/students/**
+      #      routes:
+      #        - id: r1
+      #          uri: lb://SECTION-MICROSERVICE
+      #          predicates:
+      #            - Path= /api/sections/**
+      #        - id: r2
+      #          uri: lb://STUDENT
+      #          predicates:
+      #            - Path= /api/students/**
       discovery:
         locator:
           enabled: false

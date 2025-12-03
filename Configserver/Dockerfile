@@ -6,3 +6,5 @@ LABEL "org.opencontainers.image.authors"="emna.com"
 COPY target/Configserver-0.0.1-SNAPSHOT.jar Configserver-0.0.1-SNAPSHOT.jar
 # execute the application
 ENTRYPOINT ["java", "-jar", "Configserver-0.0.1-SNAPSHOT.jar"]
+
+EXPOSE 9999

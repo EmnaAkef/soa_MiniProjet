@@ -1,9 +1,23 @@
 services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"   # port AMQP pour les microservices
+      - "15672:15672" # console web RabbitMQ
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: [ "CMD", "rabbitmqctl", "status" ]
+      interval: 10s
+      timeout: 10s
+      retries: 5
   eurekaserver:
     build: ./eurekaserver
     container_name: eurekaserver
-    ports:
-      - "8761:8761"
+#    ports:
+#      - "8761:8761"
     healthcheck:
       test: "curl --fail --silent localhost:8761/actuator/health | grep UP || exit 1"
       interval: 10s
@@ -11,8 +25,13 @@ services:
   configserver:
     build: ./configserver
     container_name: configserver
-    ports:
-      - "9999:9999"
+    environment:
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=guest
+      - SPRING_RABBITMQ_PASSWORD=guest
+#    ports:
+#      - "9999:9999"
     healthcheck:
       test: "curl --fail --silent localhost:9999/actuator/health | grep UP || exit 1"
       interval: 10s
@@ -20,8 +39,8 @@ services:
   sections-ms:
     build: ./section-microservice
     container_name: sections-ms
-    ports:
-      - "8080:8080"
+#    ports:
+#      - "8080:8080"
     environment:
       - DISCOVERY_SERVICE_URL=http://eurekaserver:8761/eureka
       - CONFIG_SERVICE_URL=http://configserver:9999
@@ -50,8 +69,8 @@ services:
   sections-ms2:
     build: ./section-microservice
     container_name: sections-ms2
-    ports:
-      - "8084:8080"
+#    ports:
+#      - "8084:8080"
     environment:
       - DISCOVERY_SERVICE_URL=http://eurekaserver:8761/eureka
       - CONFIG_SERVICE_URL=http://configserver:9999
@@ -65,8 +84,8 @@ services:
   students-ms:
     build: ./student-microservice
     container_name: students-ms
-    ports:
-      - "8081:8081"
+#    ports:
+#      - "8081:8081"
     environment:
       - DISCOVERY_SERVICE_URL=http://eurekaserver:8761/eureka
       - CONFIG_SERVICE_URL=http://configserver:9999

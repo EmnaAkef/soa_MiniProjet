@@ -6,3 +6,5 @@ LABEL "org.opencontainers.image.authors"="emna.com"
 COPY target/student-microservice-0.0.1-SNAPSHOT.jar student-microservice-0.0.1-SNAPSHOT.jar
 # execute the application
 ENTRYPOINT ["java", "-jar", "student-microservice-0.0.1-SNAPSHOT.jar"]
+
+EXPOSE 8081
