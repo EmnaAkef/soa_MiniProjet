@@ -1,100 +1,123 @@
+version: "3.8"
+
 services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:21.1.1
+    container_name: keycloak
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+    command: start-dev
+    ports:
+      - "8090:8080"
+    networks:
+      - ms-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/realms/master" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+
+
   rabbitmq:
     image: rabbitmq:3-management
     container_name: rabbitmq
     ports:
-      - "5672:5672"   # port AMQP pour les microservices
-      - "15672:15672" # console web RabbitMQ
-    environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - ms-network
     healthcheck:
-      test: [ "CMD", "rabbitmqctl", "status" ]
+      test: ["CMD", "rabbitmqctl", "status"]
       interval: 10s
-      timeout: 10s
+      timeout: 5s
       retries: 5
+
   eurekaserver:
     build: ./eurekaserver
-    container_name: eurekaserver
-#    ports:
-#      - "8761:8761"
+    container_name: eurekaserverr
+    networks:
+      - ms-network
     healthcheck:
-      test: "curl --fail --silent localhost:8761/actuator/health | grep UP || exit 1"
+      test: "curl --fail --silent http://localhost:8761/actuator/health | grep UP || exit 1"
       interval: 10s
 
   configserver:
     build: ./configserver
-    container_name: configserver
+    container_name: configserverr
+    networks:
+      - ms-network
     environment:
-      - SPRING_RABBITMQ_HOST=rabbitmq
-      - SPRING_RABBITMQ_PORT=5672
-      - SPRING_RABBITMQ_USERNAME=guest
-      - SPRING_RABBITMQ_PASSWORD=guest
-#    ports:
-#      - "9999:9999"
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eurekaserver:8761/eureka/
     healthcheck:
-      test: "curl --fail --silent localhost:9999/actuator/health | grep UP || exit 1"
+      test: "curl --fail --silent http://localhost:9999/actuator/health | grep UP || exit 1"
       interval: 10s
-
-  sections-ms:
-    build: ./section-microservice
-    container_name: sections-ms
-#    ports:
-#      - "8080:8080"
-    environment:
-      - DISCOVERY_SERVICE_URL=http://eurekaserver:8761/eureka
-      - CONFIG_SERVICE_URL=http://configserver:9999
-    healthcheck:
-      test: "curl --fail --silent localhost:8080/actuator/health | grep UP || exit 1"
     depends_on:
       eurekaserver:
         condition: service_healthy
-      configserver:
+      rabbitmq:
         condition: service_healthy
 
-  gatewayserver:
+  gateway:
     build: ./gatewayserver
-    container_name: gatewayserver
+    container_name: gatewayy
     ports:
       - "8888:8888"
+    networks:
+      - ms-network
     environment:
       - DISCOVERY_SERVICE_URL=http://eurekaserver:8761/eureka
+      - CONFIG_SERVICE_URL=http://configserver:9999
+      - KEYCLOAK_URL=${KEYCLOAK_URL:-http://host.docker.internal:8090}
     healthcheck:
-      test: "curl --fail --silent localhost:8888/actuator/health | grep UP || exit 1"
+      test: "curl --fail --silent http://localhost:8888/actuator/health | grep UP || exit 1"
       interval: 10s
     depends_on:
       eurekaserver:
         condition: service_healthy
+      keycloak:
+        condition: service_healthy
+      configserver:
+        condition: service_healthy
 
-  sections-ms2:
+  sections_ms:
     build: ./section-microservice
-    container_name: sections-ms2
-#    ports:
-#      - "8084:8080"
+    container_name: section_ms
+    networks:
+      - ms-network
     environment:
       - DISCOVERY_SERVICE_URL=http://eurekaserver:8761/eureka
       - CONFIG_SERVICE_URL=http://configserver:9999
     healthcheck:
-      test: "curl --fail --silent localhost:8084/actuator/health | grep UP || exit 1"
+      test: "curl --fail --silent http://localhost:8080/actuator/health | grep UP || exit 1"
+      interval: 10s
     depends_on:
       eurekaserver:
         condition: service_healthy
       configserver:
         condition: service_healthy
-  students-ms:
+
+  students_ms:
     build: ./student-microservice
-    container_name: students-ms
-#    ports:
-#      - "8081:8081"
+    container_name: student_ms
+    networks:
+      - ms-network
     environment:
       - DISCOVERY_SERVICE_URL=http://eurekaserver:8761/eureka
       - CONFIG_SERVICE_URL=http://configserver:9999
     healthcheck:
-      test: "curl --fail --silent localhost:8081/actuator/health | grep UP || exit 1"
+      test: "curl --fail --silent http://localhost:8081/actuator/health | grep UP || exit 1"
+      interval: 10s
     depends_on:
       eurekaserver:
         condition: service_healthy
       configserver:
         condition: service_healthy
-      sections-ms:
+      sections_ms:
         condition: service_healthy
+
+
+networks:
+  ms-network:
+    driver: bridge
